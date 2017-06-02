@@ -3,6 +3,7 @@
 
 ## Set up the project
 ##### For Ubuntu and Debian-based systems
+
 Clone the repo
 ```git clone https://github.com/Symphoria/attendance-portal.git```
 

@@ -9,6 +9,7 @@ class Student(models.Model):
     last_name = models.CharField(max_length=200, default=None)
     email = models.EmailField(default=None)
     current_semester = models.IntegerField()
+    graduation_year = models.IntegerField()
     is_active = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -35,4 +36,6 @@ class StudentCourse(models.Model):
 class Attendance(models.Model):
     student_course = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
     lecture_date = models.DateTimeField()
+    no_of_lectures = models.IntegerField(default=None)
+    lecture_type = models.CharField(max_length=50, default=None)
     is_present = models.BooleanField(default=False)
