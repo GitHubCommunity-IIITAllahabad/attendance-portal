@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Student(models.Model):
-    enrollment_no = models.CharField(max_length=50, default=None)
+    enrollment_no = models.CharField(max_length=50, default=None, unique=True)
     first_name = models.CharField(max_length=200, default=None)
     last_name = models.CharField(max_length=200, default=None)
     email = models.EmailField(default=None)
