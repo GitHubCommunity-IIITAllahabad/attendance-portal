@@ -39,3 +39,10 @@ class Attendance(models.Model):
     no_of_lectures = models.IntegerField(default=None)
     lecture_type = models.CharField(max_length=50, default=None)
     is_present = models.BooleanField(default=False)
+
+
+class Professor(models.Model):
+    professor_id = models.CharField(max_length=200, default=None, unique=True)
+    first_name = models.CharField(max_length=200, default=None)
+    last_name = models.CharField(max_length=200, default=None)
+    email = models.EmailField(default=None)
