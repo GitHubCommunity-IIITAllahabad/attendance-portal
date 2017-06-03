@@ -6,6 +6,7 @@ from .models import Student, StudentCourse, Course, Attendance
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .serializers import StudentSerializer
 
 
 class StudentView(APIView):
@@ -44,3 +45,13 @@ class StudentView(APIView):
             )
 
             return Response({"message": "Student Created"}, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        roll_no = request.GET['rollNo']
+        student = Student.objects.filter(enrollment_no=roll_no, is_active=True).first()
+
+        if student:
+            payload = StudentSerializer(instance=student).data
+            return Response(payload, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Student does not exist"}, status=status.HTTP_404_NOT_FOUND)
