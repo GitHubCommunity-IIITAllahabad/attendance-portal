@@ -3,5 +3,6 @@ from . import views
 
 app_name = 'attendance_portal'
 urlpatterns = [
-    url(r'^students/', views.StudentView.as_view())
+    url(r'^students/', views.StudentView.as_view()),
+    url(r'^login', views.UserLoginView.as_view())
 ]

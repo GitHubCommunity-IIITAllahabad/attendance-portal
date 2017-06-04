@@ -57,4 +57,3 @@ class Session(models.Model):
     user_type = models.CharField(max_length=100, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-    is_open = models.BooleanField(default=False)

@@ -1,7 +1,6 @@
-import ldap, sys
-
-
 def authenticate_user(username, password, user_authorization):
+    import ldap, sys
+
     server = 'ldap://127.31.1.42:8080'
     connection = ldap.initialize(server)
     connection.protocol_version = ldap.VERSION3
