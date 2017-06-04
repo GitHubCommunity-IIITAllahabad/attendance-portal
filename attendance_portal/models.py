@@ -46,3 +46,15 @@ class Professor(models.Model):
     first_name = models.CharField(max_length=200, default=None)
     last_name = models.CharField(max_length=200, default=None)
     email = models.EmailField(default=None)
+
+    def __str__(self):
+        return self.professor_id
+
+
+class Session(models.Model):
+    auth_token = models.CharField(max_length=200, default=None, unique=True)
+    user_id = models.IntegerField(default=0)
+    user_type = models.CharField(max_length=100, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_open = models.BooleanField(default=False)
