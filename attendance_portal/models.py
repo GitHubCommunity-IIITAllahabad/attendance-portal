@@ -31,6 +31,8 @@ class StudentCourse(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     semester = models.IntegerField()
     section = models.CharField(max_length=50, default=None)
+    total_lectures = models.IntegerField(default=0)
+    lectures_attended = models.IntegerField(default=0)
 
 
 class Attendance(models.Model):
