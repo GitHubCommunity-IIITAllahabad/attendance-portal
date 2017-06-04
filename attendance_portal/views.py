@@ -9,6 +9,7 @@ from .serializers import StudentSerializer
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
+from .permissions import IsProfessor, IsStudent
 from .ldaplogin import authenticate_user
 
 
@@ -55,6 +56,8 @@ class UserLoginView(APIView):
 
 
 class StudentView(APIView):
+    permission_classes = (IsStudent,)
+
     def put(self, request):
         roll_no = request.data['rollNo'].lower()
         first_name = request.data['firstName']
