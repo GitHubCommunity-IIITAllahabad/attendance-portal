@@ -4,5 +4,6 @@ from . import views
 app_name = 'attendance_portal'
 urlpatterns = [
     url(r'^students/', views.StudentView.as_view()),
-    url(r'^login', views.UserLoginView.as_view())
+    url(r'^login', views.UserLoginView.as_view()),
+    url(r'^update-course', views.StudentCourseView.as_view())
 ]

@@ -103,3 +103,39 @@ class StudentView(APIView):
             return Response(payload, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Student does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class StudentCourseView(APIView):
+    permission_classes = (IsStudent,)
+
+    def put(self, request):
+        enrollment_no = request.data['userId']
+        semester = request.data['semester']
+        course_data = request.data['courseData']
+
+        student = Student.objects.filter(enrollment_no=enrollment_no).first()
+
+        if student:
+            student.current_semester = semester
+            student.save()
+
+            for course in course_data:
+                a_course = Course.objects.filter(course_code=course['course'].lower()).first()
+
+                if a_course:
+                    student_course = StudentCourse.objects.filter(student=student, course=a_course,
+                                                                  semester=semester).first()
+
+                    if student_course:
+                        student_course.section = course['section']
+                        student_course.save()
+                    else:
+                        StudentCourse.objects.create(student=student, course=a_course, semester=semester,
+                                                     section=course['section'])
+                else:
+                    return Response({"message": "The entered course does not exist", "course": course['course']},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+            return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Entered enrollment no. is wrong"}, status=status.HTTP_404_NOT_FOUND)
