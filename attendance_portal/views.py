@@ -27,20 +27,32 @@ class UserLoginView(APIView):
             password = request.data['password']
             # NOTE The following code is only meant for development purposes until ldap login function is tested against
             # the university ldap server.
-            # When the function is battle-tested, uncomment the following line and comment out the if statement
+            # When the function is battle-tested, uncomment the following line and comment out statement after that
             # is_user = authenticate_user(username, password, user_type)
-            if user_type == 'professor':
-                is_user = Professor.objects.filter(professor_id=username).exists()
-            else:
-                is_user = Student.objects.filter(enrollment_no=username).exists()
+            is_user = True
+            first_name = request.data['firstName']
+            last_name = request.data['lastName']
+            email = request.data['email']
 
             if is_user:
                 auth_token = get_random_string(length=64,
                                                allowed_chars=u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
                 if user_type == 'professor':
-                    user_id = Professor.objects.get(professor_id=username).id
+                    user = Professor.objects.filter(professor_id=username).first()
+                    if user:
+                        user_id = user.id
+                    else:
+                        new_user = Professor.objects.create(professor_id=username, first_name=first_name,
+                                                            last_name=last_name, email=email, is_active=True)
+                        user_id = new_user.id
                 else:
-                    user_id = Student.objects.get(enrollment_no=username).id
+                    user = Student.objects.filter(enrollment_no=username).first()
+                    if user:
+                        user_id = user.id
+                    else:
+                        new_user = Student.objects.create(enrollment_no=username, first_name=first_name,
+                                                          last_name=last_name, email=email, is_active=True)
+                        user_id = new_user.id
 
                 Session.objects.create(auth_token=auth_token, user_id=user_id, user_type=user_type,
                                        expires_at=timezone.now() + timedelta(hours=5))
@@ -59,47 +71,27 @@ class StudentView(APIView):
     permission_classes = (IsStudent,)
 
     def put(self, request):
-        roll_no = request.data['rollNo'].lower()
-        first_name = request.data['firstName']
-        last_name = request.data['lastName']
-        email = request.data['email']
-        current_semester = request.data['currentSemester']
-        graduation_year = request.data['graduationYear']
+        student = request.user
 
-        student = Student.objects.filter(enrollment_no=roll_no).first()
+        if student.is_active is True:
+            student.first_name = request.data['firstName']
+            student.last_name = request.data['lastName']
+            student.email = request.data['email']
+            student.current_semester = request.data['currentSemester']
+            student.graduation_year = request.data['graduationYear']
+            student.save()
 
-        if student:
-            if student.is_active is True:
-                student.enrollment_no = roll_no
-                student.first_name = first_name
-                student.last_name = last_name
-                student.email = email
-                student.current_semester = current_semester
-                student.graduation_year = graduation_year
-                student.save()
-
-                return Response({"message": "Student info updated"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"message": "The student does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Student info updated"}, status=status.HTTP_200_OK)
         else:
-            Student.objects.create(
-                enrollment_no=roll_no,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                current_semester=current_semester,
-                graduation_year=graduation_year,
-                is_active=True
-            )
-
-            return Response({"message": "Student Created"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "The student does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
-        roll_no = request.GET['rollNo']
+        roll_no = request.user.enrollment_no
         student = Student.objects.filter(enrollment_no=roll_no, is_active=True).first()
 
         if student:
             payload = StudentSerializer(instance=student).data
+
             return Response(payload, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Student does not exist"}, status=status.HTTP_404_NOT_FOUND)
@@ -109,33 +101,27 @@ class StudentCourseView(APIView):
     permission_classes = (IsStudent,)
 
     def put(self, request):
-        enrollment_no = request.data['userId']
         semester = request.data['semester']
         course_data = request.data['courseData']
+        student = request.user
+        student.current_semester = semester
+        student.save()
 
-        student = Student.objects.filter(enrollment_no=enrollment_no).first()
+        for course in course_data:
+            a_course = Course.objects.filter(course_code=course['course'].lower()).first()
 
-        if student:
-            student.current_semester = semester
-            student.save()
+            if a_course:
+                student_course = StudentCourse.objects.filter(student=student, course=a_course,
+                                                              semester=semester).first()
 
-            for course in course_data:
-                a_course = Course.objects.filter(course_code=course['course'].lower()).first()
-
-                if a_course:
-                    student_course = StudentCourse.objects.filter(student=student, course=a_course,
-                                                                  semester=semester).first()
-
-                    if student_course:
-                        student_course.section = course['section']
-                        student_course.save()
-                    else:
-                        StudentCourse.objects.create(student=student, course=a_course, semester=semester,
-                                                     section=course['section'])
+                if student_course:
+                    student_course.section = course['section']
+                    student_course.save()
                 else:
-                    return Response({"message": "The entered course does not exist", "course": course['course']},
-                                    status=status.HTTP_404_NOT_FOUND)
+                    StudentCourse.objects.create(student=student, course=a_course, semester=semester,
+                                                 section=course['section'])
+            else:
+                return Response({"message": "The entered course does not exist", "course": course['course']},
+                                status=status.HTTP_404_NOT_FOUND)
 
-            return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "Entered enrollment no. is wrong"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
