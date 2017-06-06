@@ -5,11 +5,12 @@ from .models import Student, StudentCourse, Course, Attendance, Session, Profess
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import StudentSerializer
+from .serializers import StudentSerializer, ManyStudentsSerializer
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
 from .permissions import IsProfessor, IsStudent
+from .tasks import add_students_to_lecture
 from .ldaplogin import authenticate_user
 
 
@@ -43,7 +44,7 @@ class UserLoginView(APIView):
                         user_id = user.id
                     else:
                         new_user = Professor.objects.create(professor_id=username, first_name=first_name,
-                                                            last_name=last_name, email=email, is_active=True)
+                                                            last_name=last_name, email=email)
                         user_id = new_user.id
                 else:
                     user = Student.objects.filter(enrollment_no=username).first()
@@ -55,7 +56,7 @@ class UserLoginView(APIView):
                         user_id = new_user.id
 
                 Session.objects.create(auth_token=auth_token, user_id=user_id, user_type=user_type,
-                                       expires_at=timezone.now() + timedelta(hours=5))
+                                       expires_at=timezone.now() + timedelta(hours=4))
                 payload = {
                     "authToken": auth_token,
                     "userId": username,
@@ -125,3 +126,35 @@ class StudentCourseView(APIView):
                                 status=status.HTTP_404_NOT_FOUND)
 
         return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
+
+
+class AttendanceView(APIView):
+    permission_classes = (IsProfessor,)
+
+    def get(self, request):
+        course = Course.objects.filter(course_code=request.GET.get('course').lower()).first()
+
+        if course:
+            content = {
+                "course_id": course.id,
+                "semester": request.GET.get('semester'),
+                "section": request.GET.get('section').upper(),
+                "date": request.GET.get('date'),
+                "time": request.GET.get('time').upper(),
+                "no_of_lectures": request.GET.get('noOfLectures'),
+                "lecture_type": request.GET.get('lectureType')
+            }
+            add_students_to_lecture(content)
+
+            student_id_list = list(
+                StudentCourse.objects.filter(course=course, section=request.GET.get('section').upper(),
+                                             semester=request.GET.get('semester')).values_list(
+                                             'student_id', flat=True).distinct())
+            student_list = Student.objects.filter(pk__in=student_id_list)
+
+            payload = ManyStudentsSerializer(instance=student_list, many=True).data
+
+            return Response(payload, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "The entered course does not exist", "course": course['course']},
+                            status=status.HTTP_404_NOT_FOUND)
