@@ -67,3 +67,4 @@ class AttendanceToken(models.Model):
     course = models.ForeignKey(Course)
     token_issued = models.IntegerField(default=0)
     token_accepted = models.IntegerField(default=0)
+    lecture_date = models.DateTimeField()

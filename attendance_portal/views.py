@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .models import Student, StudentCourse, Course, AttendanceToken, Session, Professor
+from .models import Student, StudentCourse, Course, AttendanceToken, Session, Professor, Attendance
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,8 +11,7 @@ from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
 from .permissions import IsProfessor, IsStudent
 from .tasks import add_students_to_lecture
-from .helper_functions import get_tokens
-from .ldaplogin import authenticate_user
+from .helper_functions import get_tokens, authenticate_user
 
 
 class UserLoginView(APIView):
@@ -129,7 +128,7 @@ class StudentCourseView(APIView):
         return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
 
 
-class AttendanceView(APIView):
+class ProfessorAttendanceView(APIView):
     permission_classes = (IsProfessor,)
 
     def post(self, request):
@@ -147,6 +146,8 @@ class AttendanceView(APIView):
             }
             add_students_to_lecture(content)
             payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
+            datetime_obj = datetime.strptime(request.data['date'] + ' ' + request.data['time'].upper(),
+                                             '%d-%m-%Y %I:%M%p')
 
             for token_info in payload:
                 AttendanceToken.objects.create(token=token_info['token'], course=course,
@@ -156,3 +157,40 @@ class AttendanceView(APIView):
         else:
             return Response({"message": "The entered course does not exist", "course": course['course']},
                             status=status.HTTP_404_NOT_FOUND)
+
+
+class StudentAttendanceView(APIView):
+    permission_classes = (IsStudent,)
+
+    def put(self, request):
+        student = request.user
+        course_code = request.data['course']
+        course = Course.objects.filter(course_code=course_code.lower()).first()
+
+        if course:
+            token = request.data['attendanceToken']
+            attendance_token_obj = AttendanceToken.objects.filter(token=token, course=course).first()
+
+            if attendance_token_obj:
+                if attendance_token_obj.token_accepted < attendance_token_obj.token_issued:
+                    attendance_token_obj.token_accepted += 1
+                    attendance_token_obj.save()
+
+                    student_course = StudentCourse.objects.get(student=student, course=course)
+                    student_course.lectures_attended += 1
+                    student_course.save()
+
+                    attendance = Attendance.objects.get(student_course=student_course,
+                                                        lecture_date=attendance_token_obj.lecture_date)
+                    attendance.is_present = True
+                    attendance.save()
+
+                    return Response(
+                        {"message": "Attendance marked of " + student.enrollment_no + " for the course " + course_code},
+                        status=status.HTTP_202_ACCEPTED)
+                else:
+                    return Response({"message": "The token is no longer valid"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                return Response({"message": "The entered token is wrong"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
