@@ -5,7 +5,7 @@ from .models import Student, StudentCourse, Course, AttendanceToken, Session, Pr
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import StudentSerializer, ManyStudentsSerializer
+from .serializers import StudentSerializer, CourseSerializer
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
@@ -137,7 +137,6 @@ class ProfessorAttendanceView(APIView):
         if course:
             content = {
                 "course_id": course.id,
-                "semester": request.data['semester'],
                 "section": request.data['section'].upper(),
                 "date": request.data['date'],
                 "time": request.data['time'].upper(),
@@ -150,7 +149,7 @@ class ProfessorAttendanceView(APIView):
                                              '%d-%m-%Y %I:%M%p')
 
             for token_info in payload:
-                AttendanceToken.objects.create(token=token_info['token'], course=course,
+                AttendanceToken.objects.create(token=token_info['token'], course=course, lecture_date=datetime_obj,
                                                token_issued=token_info['students'])
 
             return Response(payload, status=status.HTTP_200_OK)
@@ -194,3 +193,37 @@ class StudentAttendanceView(APIView):
                 return Response({"message": "The entered token is wrong"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ProfessorCourseView(APIView):
+    permission_classes = (IsProfessor,)
+
+    def post(self, request):
+        professor = request.user
+        course_code = request.data['course']
+        course = Course.objects.filter(course_code=course_code.lower()).first()
+
+        if course:
+            professor.courses.add(course)
+
+            return Response({"message": "Course " + course_code + " added"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request):
+        professor = request.user
+        courses = professor.courses.all()
+        payload = CourseSerializer(instance=courses, many=True).data
+
+        return Response(payload, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        professor = request.user
+        course = Course.objects.filter(course_code=request.data['course'].lower()).first()
+
+        if course:
+            professor.courses.remove(course)
+
+            return Response({"message": "Course " + request.data['course'] + " removed"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)

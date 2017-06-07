@@ -6,8 +6,7 @@ from datetime import datetime
 @background(schedule=5)
 def add_students_to_lecture(content):
     course = Course.objects.get(pk=content['course_id'])
-    student_course_obj_list = StudentCourse.objects.filter(course=course, semester=content['semester'],
-                                                           section=content['section'])
+    student_course_obj_list = StudentCourse.objects.filter(course=course, section=content['section'])
     lecture_date_string = content['date'] + ' ' + content['time']
     lecture_datetime = datetime.strptime(lecture_date_string, '%d-%m-%Y %I:%M%p')
     flag = True
