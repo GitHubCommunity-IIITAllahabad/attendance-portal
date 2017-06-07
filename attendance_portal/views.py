@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .models import Student, StudentCourse, Course, Attendance, Session, Professor
+from .models import Student, StudentCourse, Course, AttendanceToken, Session, Professor
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +11,7 @@ from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
 from .permissions import IsProfessor, IsStudent
 from .tasks import add_students_to_lecture
+from .helper_functions import get_tokens
 from .ldaplogin import authenticate_user
 
 
@@ -131,28 +132,25 @@ class StudentCourseView(APIView):
 class AttendanceView(APIView):
     permission_classes = (IsProfessor,)
 
-    def get(self, request):
-        course = Course.objects.filter(course_code=request.GET.get('course').lower()).first()
+    def post(self, request):
+        course = Course.objects.filter(course_code=request.data['course'].lower()).first()
 
         if course:
             content = {
                 "course_id": course.id,
-                "semester": request.GET.get('semester'),
-                "section": request.GET.get('section').upper(),
-                "date": request.GET.get('date'),
-                "time": request.GET.get('time').upper(),
-                "no_of_lectures": request.GET.get('noOfLectures'),
-                "lecture_type": request.GET.get('lectureType')
+                "semester": request.data['semester'],
+                "section": request.data['section'].upper(),
+                "date": request.data['date'],
+                "time": request.data['time'].upper(),
+                "no_of_lectures": request.data['noOfLectures'],
+                "lecture_type": request.data['lectureType']
             }
             add_students_to_lecture(content)
+            payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
 
-            student_id_list = list(
-                StudentCourse.objects.filter(course=course, section=request.GET.get('section').upper(),
-                                             semester=request.GET.get('semester')).values_list(
-                                             'student_id', flat=True).distinct())
-            student_list = Student.objects.filter(pk__in=student_id_list)
-
-            payload = ManyStudentsSerializer(instance=student_list, many=True).data
+            for token_info in payload:
+                AttendanceToken.objects.create(token=token_info['token'], course=course,
+                                               token_issued=token_info['students'])
 
             return Response(payload, status=status.HTTP_200_OK)
         else:
