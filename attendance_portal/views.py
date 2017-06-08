@@ -63,7 +63,7 @@ class UserLoginView(APIView):
                     "userType": user_type
                 }
 
-                return Response(payload, status=status.HTTP_202_ACCEPTED)
+                return Response(payload, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Given Credentials are wrong"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -163,6 +163,23 @@ class ProfessorAttendanceView(APIView):
         else:
             return Response({"message": "The entered course does not exist", "course": course['course']},
                             status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request):
+        token = request.data['token']
+        course_code = request.data['course']
+        increase_by = request.data['increaseBy']
+        course = Course.objects.filter(course_code=course_code.lower()).first()
+
+        if course:
+            attendance_token_obj = AttendanceToken.objects.filter(course=course, token=token).first()
+
+            if attendance_token_obj:
+                attendance_token_obj.token_issued += int(increase_by)
+                attendance_token_obj.save()
+
+                return Response({"message": "Token capacity increased"}, status=status.HTTP_200_OK)
+
+        return Response({"message": "Check the values entered"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudentAttendanceView(APIView):
