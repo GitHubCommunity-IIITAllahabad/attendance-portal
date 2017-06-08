@@ -10,9 +10,13 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     course_code = serializers.SerializerMethodField()
+    course_name = serializers.SerializerMethodField()
 
     def get_course_code(self, obj):
         return obj.course_code.upper()
+
+    def get_course_name(self, obj):
+        return obj.course_name.title()
 
     class Meta:
         model = Course

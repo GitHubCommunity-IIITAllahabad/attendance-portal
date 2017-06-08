@@ -91,7 +91,14 @@ class StudentView(APIView):
         student = Student.objects.filter(enrollment_no=roll_no, is_active=True).first()
 
         if student:
-            payload = StudentSerializer(instance=student).data
+            course_id_list = student.studentcourse_set.all().values_list('course_id', flat=True)
+            course_obj_list = Course.objects.filter(pk__in=course_id_list)
+            courses = CourseSerializer(instance=course_obj_list, many=True).data
+            student_info = StudentSerializer(instance=student).data
+            payload = {
+                "studentInfo": student_info,
+                "coursesTaken": courses
+            }
 
             return Response(payload, status=status.HTTP_200_OK)
         else:
