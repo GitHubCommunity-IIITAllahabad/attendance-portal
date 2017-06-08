@@ -5,7 +5,7 @@ from .models import Student, StudentCourse, Course, AttendanceToken, Session, Pr
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import StudentSerializer, CourseSerializer
+from .serializers import StudentSerializer, CourseSerializer, AttendanceSerializer
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
@@ -191,6 +191,25 @@ class StudentAttendanceView(APIView):
                     return Response({"message": "The token is no longer valid"}, status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
                 return Response({"message": "The entered token is wrong"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request):
+        student = request.user
+        course_code = request.GET['course']
+        course = Course.objects.filter(course_code=course_code.lower()).first()
+
+        if course:
+            student_course = StudentCourse.objects.filter(student=student, course=course).first()
+
+            if student_course:
+                attendance_record = Attendance.objects.filter(student_course=student_course)
+                payload = AttendanceSerializer(instance=attendance_record, many=True).data
+
+                return Response(payload, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "The student does not take this course"},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
 
