@@ -27,6 +27,13 @@ class Course(models.Model):
         return self.course_code
 
 
+class Lecture(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    lecture_date = models.DateTimeField()
+    no_of_lectures = models.IntegerField(default=None)
+    lecture_type = models.CharField(max_length=50, default=None)
+
+
 class StudentCourse(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -37,10 +44,9 @@ class StudentCourse(models.Model):
 
 class Attendance(models.Model):
     student_course = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
-    lecture_date = models.DateTimeField()
-    no_of_lectures = models.IntegerField(default=None)
-    lecture_type = models.CharField(max_length=50, default=None)
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     is_present = models.BooleanField(default=False)
+    token = models.CharField(max_length=100, default=None, null=True)
 
 
 class Professor(models.Model):
@@ -64,7 +70,6 @@ class Session(models.Model):
 
 class AttendanceToken(models.Model):
     token = models.CharField(max_length=100, default=None)
-    course = models.ForeignKey(Course)
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     token_issued = models.IntegerField(default=0)
     token_accepted = models.IntegerField(default=0)
-    lecture_date = models.DateTimeField()
