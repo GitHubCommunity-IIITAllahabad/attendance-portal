@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .models import Student, StudentCourse, Course, AttendanceToken, Session, Professor, Attendance
+from .models import *
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from .serializers import StudentSerializer, CourseSerializer, AttendanceSerializer
+from .serializers import *
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
-from .permissions import IsProfessor, IsStudent
+from .permissions import *
 from .tasks import add_students_to_lecture
-from .helper_functions import get_tokens, authenticate_user
+from .helper_functions import *
 
 
 class UserLoginView(APIView):
@@ -143,22 +143,27 @@ class AttendanceTokenView(APIView):
         course = Course.objects.filter(course_code=request.data['course'].lower()).first()
 
         if course:
-            content = {
-                "course_id": course.id,
-                "section": request.data['section'].upper(),
-                "date": request.data['date'],
-                "time": request.data['time'].upper(),
-                "no_of_lectures": request.data['noOfLectures'],
-                "lecture_type": request.data['lectureType']
-            }
-            add_students_to_lecture(content)
-            payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
             datetime_obj = datetime.strptime(request.data['date'] + ' ' + request.data['time'].upper(),
                                              '%d-%m-%Y %I:%M%p')
+            lecture = Lecture.objects.filter(course=course, lecture_date=datetime_obj,
+                                             no_of_lectures=request.data['noOfLectures'],
+                                             lecture_type=request.data['lectureType'])
 
-            for token_info in payload:
-                AttendanceToken.objects.create(token=token_info['token'], course=course, lecture_date=datetime_obj,
-                                               token_issued=token_info['students'])
+            if lecture:
+                attendance_tokens = AttendanceToken.objects.filter(lecture=lecture)
+                payload = AttendanceTokenSerializer(instance=attendance_tokens, many=True).data
+            else:
+                new_lecture = Lecture.objects.create(course=course, lecture_date=datetime_obj,
+                                                     no_of_lectures=request.data['noOfLectures'],
+                                                     lecture_type=request.data['lectureType'])
+                payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
+                content = {
+                    "course_id": course.id,
+                    "section": request.data['section'].upper(),
+                    "lecture_id": new_lecture.id,
+                    "tokens": payload
+                }
+                add_students_to_lecture(content)
 
             return Response(payload, status=status.HTTP_200_OK)
         else:

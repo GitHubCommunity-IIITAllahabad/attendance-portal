@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Course, Attendance
+from .models import *
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -36,3 +36,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = ('date', 'time', 'no_of_lectures', 'lecture_type', 'is_present')
+
+
+class AttendanceTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceToken
+        fields = ('token', 'token_issued')

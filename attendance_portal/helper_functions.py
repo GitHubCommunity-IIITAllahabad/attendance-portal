@@ -59,7 +59,7 @@ def get_tokens(total_students, no_of_tokens):
                                   allowed_chars=u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
         d = {
             "token": token,
-            "students": str(no_of_students)
+            "token_issued": str(no_of_students)
         }
         token_list.append(d)
 
