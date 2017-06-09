@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^student/course', views.StudentCourseView.as_view()),
     url(r'^attendance-tokens', views.ProfessorAttendanceView.as_view()),
     url(r'^attendance/student', views.StudentAttendanceView.as_view()),
-    url(r'faculty/course', views.ProfessorCourseView.as_view())
+    url(r'faculty/course', views.ProfessorCourseView.as_view()),
+    url(r'^logout', views.logout)
 ]

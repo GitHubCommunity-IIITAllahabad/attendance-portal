@@ -5,6 +5,7 @@ from .models import Student, StudentCourse, Course, AttendanceToken, Session, Pr
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from .serializers import StudentSerializer, CourseSerializer, AttendanceSerializer
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -270,3 +271,18 @@ class ProfessorCourseView(APIView):
             return Response({"message": "Course " + request.data['course'] + " removed"}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['PUT'])
+def logout(request):
+    if 'HTTP_AUTHORIZATION_TOKEN' in request.META:
+        auth_token = request.META['HTTP_AUTHORIZATION_TOKEN']
+        session = Session.objects.filter(auth_token=auth_token).first()
+
+        if session:
+            session.expires_at = datetime.now()
+            session.save()
+
+            return Response({"message": "You are logged out"}, status=status.HTTP_200_OK)
+
+    return Response({"message": "There was something wrong"}, status=status.HTTP_400_BAD_REQUEST)
