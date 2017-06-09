@@ -26,12 +26,20 @@ class CourseSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     date = serializers.SerializerMethodField()
     time = serializers.SerializerMethodField()
+    no_of_lectures = serializers.SerializerMethodField()
+    lecture_type = serializers.SerializerMethodField()
 
     def get_date(self, obj):
-        return obj.lecture_date.strftime("%d-%m-%Y")
+        return obj.lecture.lecture_date.strftime("%d-%m-%Y")
 
     def get_time(self, obj):
-        return obj.lecture_date.strftime("%I:%M%p")
+        return obj.lecture.lecture_date.strftime("%I:%M%p")
+
+    def get_no_of_lectures(self, obj):
+        return obj.lecture.no_of_lectures
+
+    def get_lecture_type(self, obj):
+        return obj.lecture.lecture_type
 
     class Meta:
         model = Attendance

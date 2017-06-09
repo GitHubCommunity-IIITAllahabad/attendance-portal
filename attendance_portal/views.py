@@ -203,25 +203,27 @@ class StudentAttendanceView(APIView):
 
         if course:
             token = request.data['attendanceToken']
-            attendance_token_obj = AttendanceToken.objects.filter(token=token, course=course).first()
+            attendance_token_obj = AttendanceToken.objects.filter(token=token).first()
 
             if attendance_token_obj:
                 if attendance_token_obj.token_accepted < attendance_token_obj.token_issued:
-                    attendance_token_obj.token_accepted += 1
-                    attendance_token_obj.save()
-
                     student_course = StudentCourse.objects.get(student=student, course=course)
-                    student_course.lectures_attended += 1
-                    student_course.save()
-
                     attendance = Attendance.objects.get(student_course=student_course,
-                                                        lecture_date=attendance_token_obj.lecture_date)
-                    attendance.is_present = True
-                    attendance.save()
+                                                        lecture=attendance_token_obj.lecture)
 
-                    return Response(
-                        {"message": "Attendance marked of " + student.enrollment_no + " for the course " + course_code},
-                        status=status.HTTP_202_ACCEPTED)
+                    if attendance.is_present is False:
+                        attendance_token_obj.token_accepted += 1
+                        attendance_token_obj.save()
+                        student_course.lectures_attended += 1
+                        student_course.save()
+                        attendance.is_present = True
+                        attendance.token = token
+                        attendance.save()
+
+                        return Response(
+                            {
+                                "message": "Attendance marked of " + student.enrollment_no + " for the course " + course_code},
+                            status=status.HTTP_202_ACCEPTED)
                 else:
                     return Response({"message": "The token is no longer valid"}, status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
