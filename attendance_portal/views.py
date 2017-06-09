@@ -311,7 +311,7 @@ class ProfessorAttendanceView(APIView):
                 student = student_course.student
                 enrollment_no = student.enrollment_no
                 name = student.first_name + ' ' + student.last_name
-                attendance = Attendance.objects.filter(student_course=student_course, lecture_date__month=month)
+                attendance = Attendance.objects.filter(student_course=student_course, lecture__lecture_date__month=month)
                 attendance_data = AttendanceSerializer(instance=attendance, many=True).data
                 content = {
                     "enrollmentNo": enrollment_no,
