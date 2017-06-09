@@ -136,7 +136,7 @@ class StudentCourseView(APIView):
         return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
 
 
-class ProfessorAttendanceView(APIView):
+class AttendanceTokenView(APIView):
     permission_classes = (IsProfessor,)
 
     def post(self, request):
@@ -229,7 +229,16 @@ class StudentAttendanceView(APIView):
 
             if student_course:
                 attendance_record = Attendance.objects.filter(student_course=student_course)
-                payload = AttendanceSerializer(instance=attendance_record, many=True).data
+                attendance_data = AttendanceSerializer(instance=attendance_record, many=True).data
+                lectures_attended = student_course.lectures_attended
+                total_lectures = course.total_lectures
+                attendance_percentage = (lectures_attended * 100) / float(total_lectures)
+                payload = {
+                    "totalLectures": str(total_lectures),
+                    "lecturesAttended": str(lectures_attended),
+                    "percentage": str(attendance_percentage)[:5] + "%",
+                    "attendance": attendance_data
+                }
 
                 return Response(payload, status=status.HTTP_200_OK)
             else:
@@ -269,6 +278,37 @@ class ProfessorCourseView(APIView):
             professor.courses.remove(course)
 
             return Response({"message": "Course " + request.data['course'] + " removed"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ProfessorAttendanceView(APIView):
+    permission_classes = (IsProfessor,)
+
+    def get(self, request):
+        course_code = request.GET['course'].lower()
+        month = request.GET['month']
+        section = request.GET['section'].upper()
+        course = Course.objects.filter(course_code=course_code).first()
+
+        if course:
+            student_course_obj_list = StudentCourse.objects.filter(course=course, section=section)
+            payload = []
+
+            for student_course in student_course_obj_list:
+                student = student_course.student
+                enrollment_no = student.enrollment_no
+                name = student.first_name + ' ' + student.last_name
+                attendance = Attendance.objects.filter(student_course=student_course, lecture_date__month=month)
+                attendance_data = AttendanceSerializer(instance=attendance, many=True).data
+                content = {
+                    "enrollmentNo": enrollment_no,
+                    "name": name,
+                    "attendanceData": attendance_data
+                }
+                payload.append(content)
+
+            return Response(payload, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
 
