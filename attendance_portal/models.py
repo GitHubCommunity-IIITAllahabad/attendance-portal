@@ -27,26 +27,12 @@ class Course(models.Model):
         return self.course_code
 
 
-class Lecture(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    lecture_date = models.DateTimeField()
-    no_of_lectures = models.IntegerField(default=None)
-    lecture_type = models.CharField(max_length=50, default=None)
-
-
 class StudentCourse(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     semester = models.IntegerField()
     section = models.CharField(max_length=50, default=None)
     lectures_attended = models.IntegerField(default=0)
-
-
-class Attendance(models.Model):
-    student_course = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
-    is_present = models.BooleanField(default=False)
-    token = models.CharField(max_length=100, default=None, null=True)
 
 
 class Professor(models.Model):
@@ -58,6 +44,21 @@ class Professor(models.Model):
 
     def __str__(self):
         return self.professor_id
+
+
+class Lecture(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    lecture_date = models.DateTimeField()
+    no_of_lectures = models.IntegerField(default=None)
+    lecture_type = models.CharField(max_length=50, default=None)
+    professor = models.ForeignKey(Professor)
+
+
+class Attendance(models.Model):
+    student_course = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
+    is_present = models.BooleanField(default=False)
+    token = models.CharField(max_length=100, default=None, null=True)
 
 
 class Session(models.Model):

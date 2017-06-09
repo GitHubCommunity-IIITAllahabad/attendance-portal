@@ -12,7 +12,7 @@ def add_students_to_lecture(content):
 
     for token_info in content['tokens']:
         AttendanceToken.objects.create(token=token_info['token'], lecture_id=content['lecture_id'],
-                                       token_issued=token_info['students'])
+                                       token_issued=token_info['token_issued'])
 
     course.total_lectures += 1
     course.save()

@@ -140,12 +140,13 @@ class AttendanceTokenView(APIView):
     permission_classes = (IsProfessor,)
 
     def post(self, request):
+        professor = request.user
         course = Course.objects.filter(course_code=request.data['course'].lower()).first()
 
         if course:
             datetime_obj = datetime.strptime(request.data['date'] + ' ' + request.data['time'].upper(),
                                              '%d-%m-%Y %I:%M%p')
-            lecture = Lecture.objects.filter(course=course, lecture_date=datetime_obj,
+            lecture = Lecture.objects.filter(course=course, lecture_date=datetime_obj, professor=professor,
                                              no_of_lectures=request.data['noOfLectures'],
                                              lecture_type=request.data['lectureType'])
 
@@ -153,7 +154,7 @@ class AttendanceTokenView(APIView):
                 attendance_tokens = AttendanceToken.objects.filter(lecture=lecture)
                 payload = AttendanceTokenSerializer(instance=attendance_tokens, many=True).data
             else:
-                new_lecture = Lecture.objects.create(course=course, lecture_date=datetime_obj,
+                new_lecture = Lecture.objects.create(course=course, lecture_date=datetime_obj, professor=professor,
                                                      no_of_lectures=request.data['noOfLectures'],
                                                      lecture_type=request.data['lectureType'])
                 payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
@@ -171,19 +172,23 @@ class AttendanceTokenView(APIView):
                             status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request):
+        professor = request.user
         token = request.data['token']
         course_code = request.data['course']
         increase_by = request.data['increaseBy']
         course = Course.objects.filter(course_code=course_code.lower()).first()
 
         if course:
-            attendance_token_obj = AttendanceToken.objects.filter(course=course, token=token).first()
+            lecture = Lecture.objects.filter(course=course, professor=professor)
 
-            if attendance_token_obj:
-                attendance_token_obj.token_issued += int(increase_by)
-                attendance_token_obj.save()
+            if lecture:
+                attendance_token_obj = AttendanceToken.objects.filter(lecture=lecture, token=token).first()
 
-                return Response({"message": "Token capacity increased"}, status=status.HTTP_200_OK)
+                if attendance_token_obj:
+                    attendance_token_obj.token_issued += int(increase_by)
+                    attendance_token_obj.save()
+
+                    return Response({"message": "Token capacity increased"}, status=status.HTTP_200_OK)
 
         return Response({"message": "Check the values entered"}, status=status.HTTP_400_BAD_REQUEST)
 
