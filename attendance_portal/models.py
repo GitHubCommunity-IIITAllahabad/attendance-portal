@@ -21,6 +21,7 @@ class Student(models.Model):
 class Course(models.Model):
     course_name = models.CharField(max_length=200, default=None)
     course_code = models.CharField(max_length=50, default=None)
+    semester = models.IntegerField(default=0)
     total_lectures = models.IntegerField(default=0)
 
     def __str__(self):

@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'attendance_portal',
     'django_extensions',
-    'background_task'
 ]
 
 MIDDLEWARE = [

@@ -11,7 +11,6 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from datetime import timedelta, datetime
 from .permissions import *
-from .tasks import add_students_to_lecture
 from .helper_functions import *
 
 
@@ -92,7 +91,8 @@ class StudentView(APIView):
         student = Student.objects.filter(enrollment_no=roll_no, is_active=True).first()
 
         if student:
-            course_id_list = student.studentcourse_set.all().values_list('course_id', flat=True)
+            course_id_list = student.studentcourse_set.filter(semester=student.current_semester).values_list(
+                'course_id', flat=True)
             course_obj_list = Course.objects.filter(pk__in=course_id_list)
             courses = CourseSerializer(instance=course_obj_list, many=True).data
             student_info = StudentSerializer(instance=student).data
@@ -158,13 +158,22 @@ class AttendanceTokenView(APIView):
                                                      no_of_lectures=request.data['noOfLectures'],
                                                      lecture_type=request.data['lectureType'])
                 payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
-                content = {
-                    "course_id": course.id,
-                    "section": request.data['section'].upper(),
-                    "lecture_id": new_lecture.id,
-                    "tokens": payload
-                }
-                add_students_to_lecture(content)
+                student_course_obj_list = StudentCourse.objects.filter(course=course,
+                                                                       section=request.data['section'].upper(),
+                                                                       student__current_semester=course.semester)
+                create_obj_list = []
+
+                for student_course_obj in student_course_obj_list:
+                    create_obj_list.append(Attendance(student_course=student_course_obj, lecture=new_lecture))
+
+                Attendance.objects.bulk_create(create_obj_list)
+
+                for token_info in payload:
+                    AttendanceToken.objects.create(token=token_info['token'], lecture=new_lecture,
+                                                   token_issued=token_info['token_issued'])
+
+                course.total_lectures += 1
+                course.save()
 
             return Response(payload, status=status.HTTP_200_OK)
         else:
@@ -311,7 +320,8 @@ class ProfessorAttendanceView(APIView):
                 student = student_course.student
                 enrollment_no = student.enrollment_no
                 name = student.first_name + ' ' + student.last_name
-                attendance = Attendance.objects.filter(student_course=student_course, lecture__lecture_date__month=month)
+                attendance = Attendance.objects.filter(student_course=student_course,
+                                                       lecture__lecture_date__month=month)
                 attendance_data = AttendanceSerializer(instance=attendance, many=True).data
                 content = {
                     "enrollmentNo": enrollment_no,
