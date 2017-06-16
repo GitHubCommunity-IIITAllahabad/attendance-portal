@@ -148,7 +148,7 @@ class AttendanceTokenView(APIView):
                                              '%d-%m-%Y %I:%M%p')
             lecture = Lecture.objects.filter(course=course, lecture_date=datetime_obj, professor=professor,
                                              no_of_lectures=request.data['noOfLectures'],
-                                             lecture_type=request.data['lectureType'])
+                                             lecture_type=request.data['lectureType']).first()
 
             if lecture:
                 attendance_tokens = AttendanceToken.objects.filter(lecture=lecture)
@@ -177,7 +177,7 @@ class AttendanceTokenView(APIView):
 
             return Response(payload, status=status.HTTP_200_OK)
         else:
-            return Response({"message": "The entered course does not exist", "course": course['course']},
+            return Response({"message": "The entered course does not exist", "course": request.data['course']},
                             status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request):
