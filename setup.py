@@ -10,7 +10,7 @@ subprocess.call('sudo apt-get install virtualenv', shell=True)
 subprocess.call('pip install virtualenv', shell=True)
 subprocess.call('virtualenv py-env', shell=True)
 subprocess.call('source py-env/bin/activate', shell=True)
-os.chdir('attendance-portal')
+os.chdir('attendance_portal')
 subprocess.call('pip install -r requirements.txt', shell=True)
 print '\nThe project has been set up and the dependencies have been installed\nNow, installing postgres locally.....\n'
 subprocess.call('sudo apt-get install postgresql postgresql-contrib', shell=True)
