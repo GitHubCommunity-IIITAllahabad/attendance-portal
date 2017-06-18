@@ -82,9 +82,3 @@ You can start the server by writing the command
 ```
 python manage.py runserver
 ```
-
-## Start listener for background tasks
-To start a listener for listening for and executing background tasks, in a new terminal window
-```
-python manage.py process_tasks
-```
