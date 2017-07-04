@@ -1,11 +1,18 @@
-body{
+body {
     background: white url("images/background.jpg") no-repeat center center fixed;
     background-size: cover;
+}
+body,h1,h2,h3,h4,h5,h6 {
+    font-family: "Raleway", sans-serif;
 }
 
 .navbar{
     border-radius:0;
 }
 .navbar-brand{
-    font-family: 'Satisfy', cursive;
+    font-family: 'Raleway', sans-serif;
+}
+
+.form-control {
+    width: 50%;
 }

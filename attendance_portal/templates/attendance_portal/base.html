@@ -2,16 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Attendance Portal{% endblock %}</title>
     {% load staticfiles %}
     <!-- ## for dynamic urls: {% url 'attendance_portal:<name>' (id if required) %}
          #  for normal urls -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="shortcut icon" type="image/png" href="{%  static '<filename>' %}"/>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Satisfy"/>
     <link rel="stylesheet" type="text/css" href="{% static 'attendance_portal/style.css' %}" />
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="{% static 'attendance_portal/js/main.js' %}"></script>
+    <style>
+        .form-control {
+            width: 50%;
+            }
+        #bar {
+            border-radius: 4px;
+        }
+    </style>
 
 </head>
 <body>
@@ -31,15 +41,21 @@
         <div class="collapse navbar-collapse" id="topNavBar">
 
             <ul class="nav navbar-nav">
-                <li class="{% block attendance_active %}{% endblock %}" >
+            <!--    <li class="{% block attendance_active %}{% endblock %}" >
                     <a href="{% ## %}">
                         <span class="glyphicon glyphicon-notes-2" aria-hidden="true"></span>&nbsp; Attendance
                     </a>
-                </li>
+                </li> -->
 
                 <li class="{% block profile_active %}{% endblock %}">
                     <a href="{% ## %}">
-                        <span class="glyphicon glyphicons-display" aria-hidden="true"></span>&nbsp; Profile
+                        <span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span>&nbsp; Profile
+                    </a>
+                </li>
+
+                <li class="{% block token_active %}{% endblock %}">
+                    <a href="{% ## %}">
+                        <span class="glyphicon glyphicon-education" aria-hidden="true"></span>&nbsp; IIIT Allahabad
                     </a>
                 </li>
             </ul>
@@ -54,15 +70,21 @@
             </form> -->
 
             <ul class="nav navbar-nav navbar-right">
-                <li class="{% block token_active %}{% endblock %}">
-                    <a href="{% ## %}">
-                        <span class="glyphicon glyphicon-fingerprint" aria-hidden="true"></span>&nbsp; Token
+                <li>
+                    <a href="#">
+                        <span class="glyphicon glyphicon-earphone" aria-hidden="true"></span>&nbsp; Contact
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <span class="glyphicon glyphicon-flash" aria-hidden="true"></span>&nbsp; SoftDev
                     </a>
                 </li>
 
                 <li>
                     <a href="{% ## %}">
-                        <span class="glyphicon glyphicon-exit" aria-hidden="true"></span>&nbsp; Logout
+                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>&nbsp; Logout
                     </a>
                 </li>
             </ul>
@@ -73,4 +95,9 @@
     {% block body %}
     {% endblock %}
 </body>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
 </html>

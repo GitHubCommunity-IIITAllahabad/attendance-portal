@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Attendance Portal{% endblock %}</title>
     {% load staticfiles %}
     <!-- ## for dynamic urls: {% url 'attendance_portal:<name>' (id if required) %}
          #  for normal urls -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="shortcut icon" type="image/png" href="{% static '<filename>' %}"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <link href='https://fonts.googleapis.com/css?family=Satisfy' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="{% static 'attendance_portal/style.css' %}"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="{% static 'attendance_portal/js/main.js' %}"></script>
 </head>
 <body>
@@ -31,14 +32,16 @@
         <!-- Items -->
         <div class="collapse navbar-collapse" id="topNavBar">
             <ul class="nav navbar-nav">
-                <li>
-                    <a href="www.iiita.ac.in">
-                        <span class="glyphicons glyphicons-bank" aria-hidden="true"></span>&nbsp;&nbsp; IIITA
-                    </a>
-                </li>
+
                 <li class="{% block login_active %}{% endblock %}">
                     <a href="{% ## %}">
                         <span class="glyphicon glyphicon-log-in"></span>&nbsp; Log In
+                    </a>
+                </li>
+
+                <li>
+                    <a href="www.iiita.ac.in">
+                        <span class="glyphicons glyphicons-bank" aria-hidden="true"></span>&nbsp;&nbsp; IIITA
                     </a>
                 </li>
             </ul>
@@ -59,4 +62,9 @@
 {% block body %}
 {% endblock %}
 </body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+
 </html>

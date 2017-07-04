@@ -1,4 +1,46 @@
 {% extends 'attendance_portal/base.html' %}
+{% block title %}Attendance Stats{% endblock %}
 {% block attendance_active %}active{% endblock %}
+
+
+{% block body %}
+
+<center><h1>Attendance Portal</h1></center>
+<br>
+<div class="container-fluid">
+    <div class="container">
+      <form action="##">
+        <center>
+        <div class="form-group">
+
+          <label for="pwd">Token:</label>
+          <input type="password" class="form-control" id="pwd" maxlength="10" placeholder="Proxy nai lga payega.." name="pwd">
+
+        </div>
+
+        <button type="submit" class="btn btn-success">Submit</button>
+        </center>
+      </form>
+    </div>
+
+
+    <div class="w3-content w3-container w3-padding-64" id="about">
+    <p class="w3-large w3-center w3-padding-16">Attendance Stats</p>
+        {% for subject in all_subjects: %}
+            <div class="w3-light-grey">
+                {% if #AttdPercentage <= 50: %}
+                    <div id="bar" class="w3-container w3-padding-small w3-red w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
+                {% elseif #AttdPercentage<=75 and #AttdPercentage>50: %}
+                    <div id="bar" class="w3-container w3-padding-small w3-orange w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
+                {% else: %}
+                    <div id="bar" class="w3-container w3-padding-small w3-green w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
+                {% endif %}
+            </div>
+            <br>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
 
 
