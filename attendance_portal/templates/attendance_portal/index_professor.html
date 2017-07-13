@@ -7,3 +7,27 @@
 
 <center><h1>Attendance Portal</h1></center>
 <br>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <h3>Courses</h3>
+        </div>
+        {% for subjects in courses_taken: %}
+             <div class="col-sm-4 col-lg-2 col-md-4">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <h3>{{ CourseTitle }}</h3>
+                            <h5>{{ CourseCode }}</h5>
+                            <p>{{ Course Date and Time }}</p>
+                        </div>
+                        <!-- View Token -->
+                        <div class="caption">
+                        <a href="##" class="btn btn-sm btn-info" role="button">Generate Tokens</a>
+                        </div>
+                    </div>
+                </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
