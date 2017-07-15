@@ -22,9 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7)p19%x(tj$_6@+uu!1oo(nj3tfuxj53z0i-zwn+)1zb=tqg4*'
-#if os.environ.get('DJANGO_DEVELOPMENT') is None:
-#    SECRET_KEY = os.environ["SECRET_KEY"]
+if os.environ.get('DJANGO_DEVELOPMENT') is None:
+    SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -82,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'attendance_portal',
         'USER': 'postgres',
-        'PASSWORD': 'iiita123',
+        'PASSWORD': os.environ['postgres_password'],
         'HOST': 'localhost',
         'PORT': '',
     }
