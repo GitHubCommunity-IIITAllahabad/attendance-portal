@@ -1,33 +1,529 @@
-{% extends 'attendance_portal/base.html' %}
-{% block title %}Attendance Portal{% endblock %}
-{% block attendance_active %}active{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attendance Portal</title>
+    {% load staticfiles %}
 
-{% block body %}
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="shortcut icon" type="image/png" href="{% static '<filename>' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'attendance_portal/jquery.datetimepicker.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'attendance_portal/style.css' %}"/>
 
-<center><h1>Attendance Portal</h1></center>
-<br>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-12">
-            <h3>Courses</h3>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Attendance Portal</a>
         </div>
-        {% for subjects in courses_taken: %}
-             <div class="col-sm-4 col-lg-2 col-md-4">
-                    <div class="thumbnail">
-                        <div class="caption">
-                            <h3>{{ CourseTitle }}</h3>
-                            <h5>{{ CourseCode }}</h5>
-                            <p>{{ Course Date and Time }}</p>
-                        </div>
-                        <!-- View Token -->
-                        <div class="caption">
-                        <a href="##" class="btn btn-sm btn-info" role="button">Generate Tokens</a>
-                        </div>
-                    </div>
+
+        <!-- Items -->
+        <div class="collapse navbar-collapse" id="topNavBar">
+            <ul class="nav navbar-nav">
+
+                <li>
+                    <a href="http://127.0.0.1:8000">
+                        <span class="glyphicon glyphicon-log-in"></span>&nbsp; Log In
+                    </a>
+                </li>
+
+                <li>
+                    <a href="www.iiita.ac.in">
+                        <span class="glyphicons glyphicons-bank" aria-hidden="true"></span>&nbsp;&nbsp; IIITA
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="https://geekhaven.iiita.ac.in">
+                        <span class="glyphicons glyphicons-group" aria-hidden="true"></span>&nbsp;&nbsp;Contact
+                    </a>
+                </li>
+                <li>
+                    <button id="log-out" class="btn btn-warning" style="margin-top: 5%;"><span
+                            class="glyphicons glyphicons-group" aria-hidden="true"></span>Log Out
+                    </button>
+                </li>
+            </ul>
+
+        </div>
+
+
+    </div>
+</nav>
+
+<center>
+    <h1>Attendance Portal</h1>
+</center>
+<br>
+
+<div class="container-fluid">
+    <h3>
+        <center>Courses</center>
+    </h3>
+    <center>
+        <form class="form-inline" style="margin-bottom: 1%;">
+            <div class="form-group">
+                <input type="text" class="form-control" id="add-course-courseId" placeholder="Course Code"
+                       style="text-transform: uppercase">
+            </div>
+        </form>
+        <button id="add-course-professor" class="btn btn-success">Add Course</button>
+        <button id="remove-course-professor" class="btn btn-danger">Remove Course</button>
+    </center>
+    <!-- <center><button id="add-course-professor" class="btn btn-lg btn-success">Add Course</button></center> -->
+
+    <div id="course-wrapper" class="row">
+        {#        <div class="col-sm-4 col-lg-4 col-md-6">#}
+        {#            <div class="thumbnail">#}
+        {#                <center>#}
+        {#                    <div class="caption">#}
+        {#                        <h3> CourseTitle </h3>#}
+        {#                        <h4 id="courseCode"> CourseCode </h4>#}
+        {#                    </div>#}
+        {#                    <!-- View Token -->#}
+        {#                    <div class="caption">#}
+        {#                        <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalNorm">Generate#}
+        {#                            Tokens#}
+        {#                        </button>#}
+        {#                        <br>#}
+        {#                        <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModalNorm">Attendance#}
+        {#                            Report#}
+        {#                        </button>#}
+        {##}
+        {#                    </div>#}
+        {#                </center>#}
+        {#            </div>#}
+        {#        </div>#}
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModalNorm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        Information
+                    </h4>
                 </div>
-        {% endfor %}
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <center>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" id="courseId" class="form-control" value="" maxlength="8"
+                                       style="text-transform:uppercase"
+                                       placeholder="Enter the Course Id"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="section" class="form-control" value="" maxlength="8"
+                                       style="text-transform:uppercase"
+                                       placeholder="Enter the class section"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="classType">Class Type</label>
+                                <div class="radio">
+                                    <label><input id="theory" type="radio" name="optradio1">theory</label>
+                                    <label><input id="lab" type="radio" name="optradio1">lab</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="lectureType">Lecture Type</label>
+                                <div class="radio">
+                                    <label><input id="1-hour" type="radio" name="optradio">1 Hour</label>
+                                    <label><input id="2-hour" type="radio" name="optradio">2 Hour</label>
+                                    <label><input id="lab-hour" type="radio" name="optradio">Lab</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="totalStudents" class="form-control"
+                                       placeholder="No. of Students"/>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="number" id="token" class="form-control" placeholder="No. of Tokens"/>
+                            </div>
+
+                            <div class="form-group">
+
+                                <input type="text" class="form-control some_class" value="" id="datetimepicker5"/>
+                            </div>
+
+
+                        </form>
+                    </center>
+
+
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button id="getTokens" class="btn btn-success">Submit</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+<hr>
+<div class="container-fluid" style="margin-bottom: 1%;">
+    <div id="all-tokens-wrapper" class="row">
+        {#        <div class="col-md-6 col-md-offset-3 col-sm-12">#}
+        {#            <center><h3>RbfQcKg9 : 5</h3></center>#}
+        {#        </div>#}
+    </div>
+    <hr>
+</div>
+<center>
+    <p id="error-message"></p>
+</center>
 
-{% endblock %}
+<div class="container-fluid" style="margin-bottom: 2%;">
+    <div class="row">
+
+        <div class="col-md-6 col-sm-12">
+            <center>
+                <h4>View Attendance Report</h4>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="attendance-courseId" placeholder="Course Code"
+                               style="text-transform: uppercase">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="attendance-section" placeholder="Section"
+                               style="text-transform: uppercase">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="attendance-month" placeholder="Month in Numbers">
+                    </div>
+                </form>
+                <button style="margin-top: 1%;" id="course-attendance" class="btn btn-primary">View Attendance Report
+                </button>
+            </center>
+        </div>
+        <div class="col-md-6 col-sm-12">
+            <center>
+                <h4>Increase validity count of Attendance Token</h4>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="attendance-token" placeholder="Attendance Token">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="attendance-count"
+                               placeholder="No to increase count">
+                    </div>
+
+                </form>
+                <button style="margin-top: 1%;" id="increase-token" class="btn btn-primary">Increase Token Count
+                </button>
+            </center>
+        </div>
+    </div>
+</div>
+<div id="course-attendance-wrapper" class="container table-responsive table-hover" style="margin-bottom: 2%;">
+    {#    <center><h3>Attendance Report</h3></center>#}
+    {##}
+    {#    <table class="table table-hover">#}
+    {#        <thead>#}
+    {#        <tr>#}
+    {#            <th>Enrolment No.</th>#}
+    {#            <th>Name</th>#}
+    {#            <th colspan="12">#}
+    {#                <center>Attendance</center>#}
+    {##}
+    {#            </th>#}
+    {#            <th>#}
+    {#                <center>Attendance %</center>#}
+    {#            </th>#}
+    {#        </tr>#}
+    {#        <tr>#}
+    {#            <th></th>#}
+    {#            <th></th>#}
+    {#            <th>14-09-2017</th>#}
+    {#            <th>15/09</th>#}
+    {#            <th>16/09</th>#}
+    {#            <th>17/09</th>#}
+    {#            <th>18/09</th>#}
+    {#            <th>19/09</th>#}
+    {#            <th>20/09</th>#}
+    {#            <th>21/09</th>#}
+    {#            <th>22/09</th>#}
+    {#            <th>23/09</th>#}
+    {#            <th>24/09</th>#}
+    {#            <th>25/09</th>#}
+    {#            <th></th>#}
+    {##}
+    {#        </tr>#}
+    {#        </thead>#}
+    {#        <tbody>#}
+    {#        <tr>#}
+    {#            <td>IIT2016000</td>#}
+    {#            <td>John Doe</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>#}
+    {#                <center>100%</center>#}
+    {#            </td>#}
+    {#        </tr>#}
+    {#        <tr>#}
+    {#            <td>IIT2016000</td>#}
+    {#            <td>John Doe</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>A</td>#}
+    {#            <td>#}
+    {#                <center>0%</center>#}
+    {#            </td>#}
+    {#        </tr>#}
+    {##}
+    {#        </tbody>#}
+    {#    </table>#}
+</div>
+
+
+<!--Footer-->
+<footer id="footer" class="footer">
+    <div class="container text-center">
+        <h4>Connect with us</h4>
+        <ul class="social-links">
+            <a href="https://www.facebook.com/geekhaveniiita/"><i id="social-fb"
+                                                                  class="fa fa-facebook-square fa-4x social"></i></a>
+            <a href="https://github.com/GeekHaven"><i id="social-gh" class="fa fa-github-square fa-4x social"></i></a>
+            <a href="https://geekhaven.iiita.ac.in"><i id="social-gp" class="fa fa-globe fa-4x social"></i></a>
+            <a href="mailto:geekhaven@iiita.ac.in"><i id="social-em" class="fa fa-envelope-square fa-4x social"></i></a>
+        </ul>
+        ©2017 <a href="geekhaven.iiita.ac.in"> GeekHaven</a>. All rights reserved.
+
+        <div class="credits" style="margin-top: 10px;">
+
+            Designed by: Software Development Wing
+
+        </div>
+    </div>
+</footer>
+<!--/ Footer-->
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script src="{% static 'attendance_portal/jquery.js' %}"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="{% static 'attendance_portal/jquery.datetimepicker.full.js' %}"></script>
+<script>
+    if (localStorage.getItem('authToken') === null) {
+        window.location.redirect("http://127.0.0.1:8000/login");
+    }
+</script>
+<script src="{% static 'attendance_portal/main.js' %}"></script>
+</body>
+<script>
+    $.datetimepicker.setLocale('en');
+
+    $('#datetimepicker_format').datetimepicker(
+        value = '2015/04/15 05:03',
+        format = $("#datetimepicker_format_value").val());
+    console.log($('#datetimepicker_format').datetimepicker('getValue'));
+
+
+    $("#datetimepicker_format_change").on("click", function (e) {
+
+        $("#datetimepicker_format").data('xdsoft_datetimepicker').setOptions({
+            format: $("#datetimepicker_format_value").val()
+        });
+    });
+
+    $("#datetimepicker_format_locale").on("change", function (e) {
+
+        $.datetimepicker.setLocale($(e.currentTarget).val());
+    });
+
+    $('#datetimepicker').datetimepicker({
+        dayOfWeekStart: 1,
+        lang: 'en',
+        disabledDates: ['1986/01/08', '1986/01/09', '1986/01/10'],
+        startDate: '1986/01/05'
+    });
+    $('#datetimepicker').datetimepicker({
+        value: '2015/04/15 05:03',
+        step: 10
+    });
+
+    $('.some_class').datetimepicker();
+
+    $('#default_datetimepicker').datetimepicker({
+        formatTime: 'H:i',
+        formatDate: 'd.m.Y',
+        //defaultDate:'8.12.1986', // it's my birthday
+        defaultDate: '+03.01.1970', // it's my birthday
+        defaultTime: '10:00',
+        timepickerScrollbar: false
+    });
+
+    $('#datetimepicker10').datetimepicker({
+        step: 5,
+        inline: true
+    });
+    $('#datetimepicker_mask').datetimepicker({
+        mask: '9999/19/39 29:59'
+    });
+
+    $('#datetimepicker1').datetimepicker({
+        datepicker: false,
+        format: 'H:i',
+        step: 5
+    });
+    $('#datetimepicker2').datetimepicker({
+        yearOffset: 222,
+        lang: 'ch',
+        timepicker: false,
+
+        format: 'd/m/Y',
+        formatDate: 'Y/m/d',
+
+        minDate: '-1970/01/02', // yesterday is minimum date
+        maxDate: '+1970/01/02' // and tommorow is maximum date calendar
+    });
+    $('#datetimepicker3').datetimepicker({
+        inline: true
+    });
+    $('#datetimepicker4').datetimepicker();
+
+    $('#open').click(function () {
+        $('#datetimepicker4').datetimepicker('show');
+    });
+    $('#close').click(function () {
+        $('#datetimepicker4').datetimepicker('hide');
+    });
+    $('#reset').click(function () {
+
+        $('#datetimepicker4').datetimepicker('reset');
+    });
+    $('#datetimepicker5').datetimepicker({
+        datepicker: true,
+        allowTimes: ['09:00', '10:00', '11:15', '12:15', '15:00', '16:00', '17:00', '18:00', 'Extra'],
+        step: 5
+    });
+    $('#datetimepicker6').datetimepicker();
+
+    $('#destroy').click(function () {
+
+        if ($('#datetimepicker6').data('xdsoft_datetimepicker')) {
+            $('#datetimepicker6').datetimepicker('destroy');
+            this.value = 'create';
+        } else {
+            $('#datetimepicker6').datetimepicker();
+            this.value = 'destroy';
+        }
+    });
+
+    var logic = function (currentDateTime) {
+
+        if (currentDateTime && currentDateTime.getDay() == 6) {
+            this.setOptions({
+                minTime: '11:00'
+            });
+        } else
+            this.setOptions({
+                minTime: '8:00'
+            });
+    };
+    $('#datetimepicker7').datetimepicker({
+        onChangeDateTime: logic,
+        onShow: logic
+    });
+    $('#datetimepicker8').datetimepicker({
+
+        onGenerate: function (ct) {
+
+            $(this).find('.xdsoft_date')
+                .toggleClass('xdsoft_disabled');
+        },
+        minDate: '-1970/01/2',
+        maxDate: '+1970/01/2',
+        timepicker: false
+    });
+    $('#datetimepicker9').datetimepicker({
+
+        onGenerate: function (ct) {
+
+            $(this).find('.xdsoft_date.xdsoft_weekend')
+                .addClass('xdsoft_disabled');
+        },
+        weekends: ['01.01.2014', '02.01.2014', '03.01.2014', '04.01.2014', '05.01.2014', '06.01.2014'],
+        timepicker: false
+    });
+    var dateToDisable = new Date();
+    dateToDisable.setDate(dateToDisable.getDate() + 2);
+    $('#datetimepicker11').datetimepicker({
+
+        beforeShowDay: function (date) {
+
+            if (date.getMonth() == dateToDisable.getMonth() && date.getDate() == dateToDisable.getDate()) {
+                return [false, ""]
+            }
+
+            return [true, ""];
+        }
+    });
+    $('#datetimepicker12').datetimepicker({
+
+        beforeShowDay: function (date) {
+
+            if (date.getMonth() == dateToDisable.getMonth() && date.getDate() == dateToDisable.getDate()) {
+                return [true, "custom-date-style"];
+            }
+
+            return [true, ""];
+        }
+    });
+    $('#datetimepicker_dark').datetimepicker({
+        theme: 'dark'
+    })
+</script>
+
+</html>

@@ -1,0 +1,224 @@
+body {
+    background: white url("images/background.0b0aede9335a.jpg") no-repeat center center fixed;
+    background-size: cover;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "Raleway", sans-serif;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.navbar-brand {
+    font-family: 'Raleway', sans-serif;
+}
+
+.form-control {
+    width: 50%;
+}
+
+#bar {
+    border-radius: 4px;
+    margin-top: 5px;
+    box-shadow: 5px 5px 10px 0 grey;
+    padding: 0 15px 0 15px;
+}
+
+#pwd {
+    margin-bottom: 20px;
+}
+
+.thumbnail {
+    margin-top: 50px;
+    margin-bottom: 5px;
+    box-shadow: 6px 6px 10px 0 grey;
+    padding: 0 15px 0 15px;
+    text-align: center;
+}
+
+.custom-date-style {
+    background-color: red !important;
+}
+
+.input-wide {
+    width: 500px;
+}
+
+.form-control {
+    width: 50%;
+}
+
+@import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+/***********************************
+Modal for index_professor.html
+************************************/
+
+.modal-body .form-horizontal .col-sm-2,
+.modal-body .form-horizontal .col-sm-10 {
+    width: 100%
+}
+
+.modal-body .form-horizontal .control-label {
+    text-align: left;
+}
+
+.modal-body .form-horizontal .col-sm-offset-2 {
+    margin-left: 15px;
+}
+
+fieldset,
+label {
+    margin: 0;
+    padding: 0;
+}
+
+/* body{ margin: 20px; }  */
+
+/* h1 { font-size: 1.5em; margin: 10px; } */
+
+/***********************************
+Star rating widget
+************************************/
+
+.rating {
+    border: none;
+    margin-right: 44%;
+    margin-top: 5px;
+}
+
+.rating > input {
+    display: none;
+}
+
+.rating > label:before {
+    margin: 5px;
+    font-size: 1.25em;
+    font-family: FontAwesome;
+    display: block;
+    content: "\f005";
+}
+
+.btn {
+    margin-bottom: 5px;
+}
+
+.rating > .half:before {
+    content: "\f089";
+    position: absolute;
+}
+
+.rating > label {
+    color: #ddd;
+    float: right;
+}
+
+/***** CSS Magic to Highlight Stars on Hover *****/
+
+.rating > input:checked ~ label,
+
+    /* show gold star when clicked */
+
+.rating:not(:checked) > label:hover,
+
+    /* hover current star */
+
+.rating:not(:checked) > label:hover ~ label {
+    color: #FFD700;
+}
+
+/* hover previous stars in list */
+
+.rating > input:checked + label:hover,
+
+    /* hover current star when changing rating */
+
+.rating > input:checked ~ label:hover,
+.rating > label:hover ~ input:checked ~ label,
+
+    /* lighten current selection */
+
+.rating > input:checked ~ label:hover ~ label {
+    color: #FFED85;
+}
+
+/***********************************
+Footer
+************************************/
+
+.footer {
+    padding: 0px 0 0px;
+    background: #111111;
+    color: #ccc;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.footer a {
+    color: #fff;
+}
+
+.footer h3 {
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin: 0 0 40px;
+    font-size: 24px;
+}
+
+.footer .mc-trial {
+    margin: 20px 0;
+}
+
+.footer .social-links {
+    margin-right: 60px;
+}
+
+.social:hover {
+    -webkit-transform: scale(1.3);
+    -moz-transform: scale(1.3);
+    -o-transform: scale(1.3);
+}
+
+.social {
+    -webkit-transform: scale(0.8);
+    /* Browser Variations: */
+    -moz-transform: scale(0.8);
+    -o-transform: scale(0.8);
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    -o-transition-duration: 0.5s;
+    margin-left: 10px
+}
+
+/*
+    Multicoloured Hover Variations
+*/
+
+#social-fb:hover {
+    color: grey;
+}
+
+#social-gh:hover {
+    color: grey;
+}
+
+#social-gp:hover {
+    color: grey;
+}
+
+#social-em:hover {
+    color: grey;
+}
+
+button#log-out.btn.btn-warning {
+    margin-top: 5%;
+}

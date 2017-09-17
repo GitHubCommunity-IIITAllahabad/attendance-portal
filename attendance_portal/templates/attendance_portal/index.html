@@ -1,46 +1,272 @@
-{% extends 'attendance_portal/base.html' %}
-{% block title %}Attendance Portal{% endblock %}
-{% block attendance_active %}active{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attendance Portal</title>
+    {% load staticfiles %}
 
-{% block body %}
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'attendance_portal/style.css' %}"/>
 
-<center><h1>Attendance Portal</h1></center>
-<br>
-<div class="container-fluid">
-    <div class="container">
-      <form action="##">
-        <center>
-        <div class="form-group">
+</head>
 
-          <label for="pwd">Token:</label>
-          <input type="password" class="form-control" id="pwd" maxlength="10" placeholder="Proxy nai lga payega.." name="pwd">
+<body>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Attendance Portal</a>
+        </div>
+
+        <!-- Items -->
+        <div class="collapse navbar-collapse" id="topNavBar">
+            <ul class="nav navbar-nav">
+
+                <li>
+                    <a href="http://127.0.0.1:8000">
+                        <span class="glyphicon glyphicon-log-in"></span>&nbsp; Log In
+                    </a>
+                </li>
+
+                <li>
+                    <a href="www.iiita.ac.in">
+                        <span class="glyphicons glyphicons-bank" aria-hidden="true"></span>&nbsp;&nbsp; IIITA
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="https://geekhaven.iiita.ac.in">
+                        <span class="glyphicons glyphicons-group" aria-hidden="true"></span>&nbsp;&nbsp;Contact
+                    </a>
+                </li>
+                <li>
+
+                    <button id="log-out" class="btn btn-warning" style="margin-top: 5%;"><span
+                            class="glyphicons glyphicons-group" aria-hidden="true"></span>Log Out
+                    </button>
+
+                </li>
+            </ul>
 
         </div>
 
-        <button type="submit" class="btn btn-success">Submit</button>
-        </center>
-      </form>
+
     </div>
+</nav>
+<center>
+    <h1>Attendance Portal</h1>
+</center>
+<div class="container-fluid">
+    <div class="container">
+        <center>
+            <form action="#">
+
+                <div class="form-group">
+
+                    <label for="course">Course:</label>
+                    <input type="text" class="form-control" id="course" maxlength="10" placeholder="Enter the course"
+                           name="course">
+
+                </div>
+                <div class="form-group">
+                    <label for="pwd">Token:</label>
+                    <input type="password" class="form-control" id="token" maxlength="10" placeholder="Enter token"
+                           name="pwd">
 
 
-    <div class="w3-content w3-container w3-padding-64" id="about">
-    <p class="w3-large w3-center w3-padding-16">Attendance Stats</p>
-        {% for subject in course: %}
-            <div class="w3-light-grey">
-                {% if #AttdPercentage <= 50: %}
-                    <div id="bar" class="w3-container w3-padding-small w3-red w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
-                {% elseif #AttdPercentage<=75 and #AttdPercentage>50: %}
-                    <div id="bar" class="w3-container w3-padding-small w3-orange w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
-                {% else: %}
-                    <div id="bar" class="w3-container w3-padding-small w3-green w3-center" style="width:{{ #AttdPercentage }}">{{ #SubName + '  ' + #AttdPercentage }}</div>
-                {% endif %}
-            </div>
-            <br>
-        {% endfor %}
+                    <h4 class="modal-title">How was the class?</h4>
+                    <fieldset class="rating">
+                        <input type="radio" id="star5" name="rating" value="5" class="star-rating"/><label class="full"
+                                                                                                           for="star5"
+                                                                                                           title="Awesome - 5 stars"></label>
+                        <input type="radio" id="star4half" name="rating" value="4 and a half"
+                               class="star-rating"/><label class="half" for="star4half"
+                                                           title="Pretty good - 4.5 stars"></label>
+                        <input type="radio" id="star4" name="rating" value="4" class="star-rating"/><label class="full"
+                                                                                                           for="star4"
+                                                                                                           title="Pretty good - 4 stars"></label>
+                        <input type="radio" id="star3half" name="rating" value="3 and a half"
+                               class="star-rating"/><label class="half" for="star3half"
+                                                           title="Good - 3.5 stars"></label>
+                        <input type="radio" id="star3" name="rating" value="3" class="star-rating"/><label class="full"
+                                                                                                           for="star3"
+                                                                                                           title="Okayish - 3 stars"></label>
+                        <input type="radio" id="star2half" name="rating" value="2 and a half"
+                               class="star-rating"/><label class="half" for="star2half"
+                                                           title="Kinda bad - 2.5 stars"></label>
+                        <input type="radio" id="star2" name="rating" value="2" class="star-rating"/><label class="full"
+                                                                                                           for="star2"
+                                                                                                           title="Bad - 2 stars"></label>
+                        <input type="radio" id="star1half" name="rating" value="1 and a half"
+                               class="star-rating"/><label class="half" for="star1half"
+                                                           title="Pretty Bad - 1.5 stars"></label>
+                        <input type="radio" id="star1" name="rating" value="1" class="star-rating"/><label class="full"
+                                                                                                           for="star1"
+                                                                                                           title="Very Bad - 1 star"></label>
+                        <input type="radio" id="starhalf" name="rating" value="half" class="star-rating"/><label
+                            class="half" for="starhalf" title="Very Bad - 0.5 stars"></label>
+                    </fieldset>
+                    <input class="form-control" id="feedback" placeholder="Feedback" name="comments">
+                </div>
+            </form>
+            <button id="mark-attendance" class="btn btn-success">Submit</button>
+            <div id="student-notification" style="padding-top: 5px;"></div>
+        </center>
+
+
+    </div>
+    <center><h4 id="error-message"></h4></center>
+    <hr>
+</div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-5 col-sm-12">
+            <center>
+                <form class="form-inline" style="margin-bottom: 1%;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="add-course-courseId" placeholder="Course Code"
+                               style="text-transform: uppercase">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="add-course-section" placeholder="Section"
+                               style="text-transform: uppercase">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="add-course-semester"
+                               placeholder="Semester in Numbers">
+                    </div>
+                </form>
+                <button id="add-course-student" class="btn btn-success">Add Course</button>
+                <button id="remove-course-student" class="btn btn-danger">Remove Course</button>
+            </center>
+        </div>
+        <div class="col-md-7 col-sm-12">
+            <center>
+                <form class="form-inline" style="margin-bottom: 1%;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="student-name" placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="student-email" placeholder="Email">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="student-semester" placeholder="semester in numbers">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="student-graduation-year" placeholder="Graduation Year">
+                    </div>
+                </form>
+                <button id="update-student" class="btn btn-success">Update Details</button>
+
+            </center>
+        </div>
     </div>
 </div>
+<div class="container-fluid" style="padding-right: 50px; padding-left: 50px; padding-top: 15px; padding-bottom: 50px;">
 
-{% endblock %}
+    <center>
+        <div class="col-sm-12">
+            <h3>Courses</h3>
+        </div>
+    </center>
+    <div class="row" id="course-wrapper">
+
+        <!-- <div class="thumbnail">
+                    <div class="caption">
+                        <h3>IITP132C</h3>
+                        <h5>Introduction To Programming</h5>
+                    </div>
+
+                    <div class="caption">
+                        <button class="btn btn-success viewAttendance">View Attendance</button>
+                    </div>
+                </div>
+            </div> -->
+    </div>
+</div>
+<hr>
+<div id="attendance-wrapper" class="container-fluid" style="padding-right: 2%; padding-left: 2%; margin-bottom: 2%">
+    <!-- <center>
+    <h3 id="course-name">Data Structures</h4>
+</center>
+<div class="row>">
+    <center><h4 class="col-lg-6 col-sm-12">Total lectures : <span id="total-lectures">8</span></h5></center>
+    <center><h4 class="col-lg-6 col-sm-12">Lectures Attended : <span id="lectures-attended">4</span></h5></center>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+    <div id="attendance-bar" class="w3-container w3-padding-small w3-center w3-green" style="width: 50%;">50%</div>
+    </div>
+</div>
+<div class="row" id="attendance-details">
+    <div class="col-lg-3 col-lg-12">
+        <center>
+        <div class="thumbnail">
+            <div class="container-fluid">
+                    <div class="caption">
+                        <h4>09-06-2017</h4>
+                        <h4>11:15AM</h4 >
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6">2 Lectures</div>
+                            <div class="col-lg-6 col-sm-6">Theory</div>
+                        </div>
+                        <h3 style="color: green;">Present</h3>
+                    </div>
+
+            </div>
+                </div>
+        </center>
+            </div>
+    </div>
+</div> -->
+</div>
+<center><h4 id="error-message"></h4></center>
+
+<!--Footer-->
+<footer id="footer" class="footer">
+    <div class="container text-center">
+        <h4>Connect with us</h4>
+        <ul class="social-links">
+            <a href="https://www.facebook.com/geekhaveniiita/"><i id="social-fb"
+                                                                  class="fa fa-facebook-square fa-4x social"></i></a>
+            <a href="https://github.com/GeekHaven"><i id="social-gh" class="fa fa-github-square fa-4x social"></i></a>
+            <a href="https://geekhaven.iiita.ac.in"><i id="social-gp" class="fa fa-globe fa-4x social"></i></a>
+            <a href="mailto:geekhaven@iiita.ac.in"><i id="social-em" class="fa fa-envelope-square fa-4x social"></i></a>
+        </ul>
+        ©2017 <a href="geekhaven.iiita.ac.in"> GeekHaven</a>. All rights reserved.
+
+        <div class="credits" style="margin-top: 10px;">
+
+            Designed by: Software Development Wing
+
+        </div>
+    </div>
+</footer>
+<!--/ Footer-->
 
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script>
+    if (localStorage.getItem('authToken') === null) {
+        window.location.redirect("http://127.0.0.1:8000/login");
+    }
+</script>
+<script src="{% static 'attendance_portal/main.js' %}"></script>
+</body>
+
+
+</html>

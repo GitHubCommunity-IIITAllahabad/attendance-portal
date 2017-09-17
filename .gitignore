@@ -1,4 +1,4 @@
 *pyc
 .idea/
-attendance_portal/migrations/*
 AttendancePortal/settings_dev.py
+proportaldev

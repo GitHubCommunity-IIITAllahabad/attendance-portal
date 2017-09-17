@@ -35,6 +35,9 @@ class StudentCourse(models.Model):
     section = models.CharField(max_length=50, default=None)
     lectures_attended = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.student.enrollment_no + " " + self.course.course_code
+
 
 class Professor(models.Model):
     professor_id = models.CharField(max_length=200, default=None, unique=True)
@@ -53,6 +56,10 @@ class Lecture(models.Model):
     no_of_lectures = models.IntegerField(default=None)
     lecture_type = models.CharField(max_length=50, default=None)
     professor = models.ForeignKey(Professor)
+    rating = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return self.course.course_code
 
 
 class Attendance(models.Model):
@@ -60,6 +67,8 @@ class Attendance(models.Model):
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     is_present = models.BooleanField(default=False)
     token = models.CharField(max_length=100, default=None, null=True)
+    rating = models.DecimalField(max_digits=5, decimal_places=1)
+    feedback = models.TextField()
 
 
 class Session(models.Model):
@@ -75,3 +84,6 @@ class AttendanceToken(models.Model):
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     token_issued = models.IntegerField(default=0)
     token_accepted = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.token

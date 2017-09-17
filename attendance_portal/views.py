@@ -30,7 +30,7 @@ class UserLoginView(APIView):
             # the university ldap server.
             # When the function is battle-tested, uncomment the following line and comment out statement after that
             # is_user = authenticate_user(username, password, user_type)
-            is_user = True
+            is_user = password == "pass"
             first_name = request.data['firstName']
             last_name = request.data['lastName']
             email = request.data['email']
@@ -48,7 +48,7 @@ class UserLoginView(APIView):
                         user_id = new_user.id
                 else:
                     user = Student.objects.filter(enrollment_no=username).first()
-                    if user:
+                    if user is not None:
                         user_id = user.id
                     else:
                         new_user = Student.objects.create(enrollment_no=username, first_name=first_name,
@@ -73,18 +73,20 @@ class StudentView(APIView):
 
     def put(self, request):
         student = request.user
+        first_name = str(request.data['name']).split()[0]
+        last_name = str(request.data['name']).split()[1]
 
         if student.is_active is True:
-            student.first_name = request.data['firstName']
-            student.last_name = request.data['lastName']
+            student.first_name = first_name
+            student.last_name = last_name
             student.email = request.data['email']
             student.current_semester = request.data['currentSemester']
             student.graduation_year = request.data['graduationYear']
             student.save()
 
-            return Response({"message": "Student info updated"}, status=status.HTTP_200_OK)
+            return Response("Student info updated", status=status.HTTP_200_OK)
         else:
-            return Response({"message": "The student does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("The student does not exist", status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
         roll_no = request.user.enrollment_no
@@ -111,29 +113,45 @@ class StudentCourseView(APIView):
 
     def put(self, request):
         semester = request.data['semester']
-        course_data = request.data['courseData']
+        course = request.data['course']
+        section = request.data['section'].upper();
         student = request.user
         student.current_semester = semester
         student.save()
+        a_course = Course.objects.filter(course_code=course.lower()).first()
 
-        for course in course_data:
-            a_course = Course.objects.filter(course_code=course['course'].lower()).first()
+        if a_course:
+            student_course = StudentCourse.objects.filter(student=student, course=a_course, semester=semester).first()
 
-            if a_course:
-                student_course = StudentCourse.objects.filter(student=student, course=a_course,
-                                                              semester=semester).first()
-
-                if student_course:
-                    student_course.section = course['section']
-                    student_course.save()
-                else:
-                    StudentCourse.objects.create(student=student, course=a_course, semester=semester,
-                                                 section=course['section'])
+            if student_course:
+                student_course.section = section
+                student_course.save()
             else:
-                return Response({"message": "The entered course does not exist", "course": course['course']},
-                                status=status.HTTP_404_NOT_FOUND)
+                StudentCourse.objects.create(student=student, course=a_course, semester=semester, section=section)
 
-        return Response({"message": "Courses updated"}, status=status.HTTP_200_OK)
+            return Response("Courses updated", status=status.HTTP_200_OK)
+        else:
+            return Response("The entered course does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request):
+        semester = request.data['semester']
+        course = request.data['course']
+        section = request.data['section']
+        student = request.user
+        a_course = Course.objects.filter(course_code=course.lower()).first()
+
+        if a_course:
+            student_course = StudentCourse.objects.filter(student=student, course=a_course, section=section,
+                                         semester=semester).first()
+
+            if student_course:
+                student_course.delete()
+
+                return Response("Courses updated", status=status.HTTP_200_OK)
+            else:
+                return Response("Student is not registered for this course", status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response("The entered course does not exist", status=status.HTTP_404_NOT_FOUND)
 
 
 class AttendanceTokenView(APIView):
@@ -155,7 +173,7 @@ class AttendanceTokenView(APIView):
                 payload = AttendanceTokenSerializer(instance=attendance_tokens, many=True).data
             else:
                 new_lecture = Lecture.objects.create(course=course, lecture_date=datetime_obj, professor=professor,
-                                                     no_of_lectures=request.data['noOfLectures'],
+                                                     no_of_lectures=request.data['noOfLectures'], rating=0,
                                                      lecture_type=request.data['lectureType'])
                 payload = get_tokens(int(request.data['totalStudents']), int(request.data['noOfTokens']))
                 student_course_obj_list = StudentCourse.objects.filter(course=course,
@@ -164,15 +182,16 @@ class AttendanceTokenView(APIView):
                 create_obj_list = []
 
                 for student_course_obj in student_course_obj_list:
-                    create_obj_list.append(Attendance(student_course=student_course_obj, lecture=new_lecture))
+                    create_obj_list.append(
+                        Attendance(student_course=student_course_obj, lecture=new_lecture, rating=0.0))
 
                 Attendance.objects.bulk_create(create_obj_list)
 
                 for token_info in payload:
-                    AttendanceToken.objects.create(token=token_info['token'], lecture=new_lecture,
+                    AttendanceToken.objects.create(token=token_info.get('token'), lecture=new_lecture,
                                                    token_issued=token_info['token_issued'])
 
-                course.total_lectures += 1
+                course.total_lectures += int(request.data['noOfLectures'])
                 course.save()
 
             return Response(payload, status=status.HTTP_200_OK)
@@ -181,25 +200,17 @@ class AttendanceTokenView(APIView):
                             status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request):
-        professor = request.user
         token = request.data['token']
-        course_code = request.data['course']
         increase_by = request.data['increaseBy']
-        course = Course.objects.filter(course_code=course_code.lower()).first()
+        attendance_token_obj = AttendanceToken.objects.filter(token=token).first()
 
-        if course:
-            lecture = Lecture.objects.filter(course=course, professor=professor)
+        if attendance_token_obj:
+            attendance_token_obj.token_issued += int(increase_by)
+            attendance_token_obj.save()
 
-            if lecture:
-                attendance_token_obj = AttendanceToken.objects.filter(lecture=lecture, token=token).first()
+            return Response("Token capacity increased", status=status.HTTP_200_OK)
 
-                if attendance_token_obj:
-                    attendance_token_obj.token_issued += int(increase_by)
-                    attendance_token_obj.save()
-
-                    return Response({"message": "Token capacity increased"}, status=status.HTTP_200_OK)
-
-        return Response({"message": "Check the values entered"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Check the values entered", status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudentAttendanceView(APIView):
@@ -217,28 +228,41 @@ class StudentAttendanceView(APIView):
             if attendance_token_obj:
                 if attendance_token_obj.token_accepted < attendance_token_obj.token_issued:
                     student_course = StudentCourse.objects.get(student=student, course=course)
-                    attendance = Attendance.objects.get(student_course=student_course,
-                                                        lecture=attendance_token_obj.lecture)
+                    attendance = Attendance.objects.filter(student_course=student_course,
+                                                        lecture=attendance_token_obj.lecture).first()
 
-                    if attendance.is_present is False:
-                        attendance_token_obj.token_accepted += 1
-                        attendance_token_obj.save()
-                        student_course.lectures_attended += 1
-                        student_course.save()
-                        attendance.is_present = True
-                        attendance.token = token
-                        attendance.save()
+                    if attendance:
+                        if attendance.is_present is False:
+                            attendance_token_obj.token_accepted += 1
+                            attendance_token_obj.save()
+                            student_course.lectures_attended += attendance_token_obj.lecture.no_of_lectures
+                            student_course.save()
+                            attendance.is_present = True
+                            attendance.token = token
+                            attendance.rating = request.data['rating']
+                            attendance.feedback = request.data['feedback']
+                            attendance.save()
 
-                        return Response(
-                            {
-                                "message": "Attendance marked of " + student.enrollment_no + " for the course " + course_code},
-                            status=status.HTTP_202_ACCEPTED)
+                            ratings_list = Attendance.objects.filter(student_course=student_course,
+                                                                     lecture=attendance.lecture).values_list('rating',
+                                                                                                             flat=True)
+                            average_rating = sum(ratings_list) / len(ratings_list)
+                            attendance_token_obj.lecture.rating = int(round(average_rating))
+                            attendance_token_obj.lecture.save()
+
+                            return Response(
+                                "Attendance marked of " + student.enrollment_no + " for the course " + course_code,
+                                status=status.HTTP_202_ACCEPTED)
+                        else:
+                            return Response("You do not take this course", status=status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        return Response("Attendance already marked", status=status.HTTP_406_NOT_ACCEPTABLE)
                 else:
-                    return Response({"message": "The token is no longer valid"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response("The token is no longer valid", status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
-                return Response({"message": "The entered token is wrong"}, status=status.HTTP_404_NOT_FOUND)
+                return Response("The entered token is wrong", status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("The entered course is wrong", status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
         student = request.user
@@ -253,6 +277,10 @@ class StudentAttendanceView(APIView):
                 attendance_data = AttendanceSerializer(instance=attendance_record, many=True).data
                 lectures_attended = student_course.lectures_attended
                 total_lectures = course.total_lectures
+
+                if total_lectures == 0:
+                    return Response("No lectures have been scheduled yet", status=status.HTTP_404_NOT_FOUND)
+
                 attendance_percentage = (lectures_attended * 100) / float(total_lectures)
                 payload = {
                     "totalLectures": str(total_lectures),
@@ -263,10 +291,9 @@ class StudentAttendanceView(APIView):
 
                 return Response(payload, status=status.HTTP_200_OK)
             else:
-                return Response({"message": "The student does not take this course"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response("The student does not take this course", status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "The entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("The entered course is wrong", status=status.HTTP_404_NOT_FOUND)
 
 
 class ProfessorCourseView(APIView):
@@ -280,9 +307,9 @@ class ProfessorCourseView(APIView):
         if course:
             professor.courses.add(course)
 
-            return Response({"message": "Course " + course_code + " added"}, status=status.HTTP_201_CREATED)
+            return Response("Course " + course_code + " added", status=status.HTTP_201_CREATED)
         else:
-            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("Entered course is wrong", status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
         professor = request.user
@@ -298,15 +325,16 @@ class ProfessorCourseView(APIView):
         if course:
             professor.courses.remove(course)
 
-            return Response({"message": "Course " + request.data['course'] + " removed"}, status=status.HTTP_200_OK)
+            return Response("Course " + request.data['course'] + " removed", status=status.HTTP_200_OK)
         else:
-            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("Entered course is wrong", status=status.HTTP_404_NOT_FOUND)
 
 
 class ProfessorAttendanceView(APIView):
     permission_classes = (IsProfessor,)
 
     def get(self, request):
+        professor = request.user
         course_code = request.GET['course'].lower()
         month = request.GET['month']
         section = request.GET['section'].upper()
@@ -314,6 +342,14 @@ class ProfessorAttendanceView(APIView):
 
         if course:
             student_course_obj_list = StudentCourse.objects.filter(course=course, section=section)
+            rating_list = Lecture.objects.filter(professor_id=professor.id, course_id=course.id).values_list('rating',
+                                                                                                             flat=True)
+
+            if len(rating_list) == 0:
+                average_rating = 0
+            else:
+                average_rating = sum(rating_list) / len(rating_list)
+
             payload = []
 
             for student_course in student_course_obj_list:
@@ -322,6 +358,10 @@ class ProfessorAttendanceView(APIView):
                 name = student.first_name + ' ' + student.last_name
                 attendance = Attendance.objects.filter(student_course=student_course,
                                                        lecture__lecture_date__month=month)
+
+                if not attendance.first():
+                    return Response("No classes in the entered month", status=status.HTTP_404_NOT_FOUND)
+
                 attendance_data = AttendanceSerializer(instance=attendance, many=True).data
                 content = {
                     "enrollmentNo": enrollment_no,
@@ -330,9 +370,14 @@ class ProfessorAttendanceView(APIView):
                 }
                 payload.append(content)
 
-            return Response(payload, status=status.HTTP_200_OK)
+            response = {
+                "rating": average_rating,
+                "payload": payload
+            }
+
+            return Response(response, status=status.HTTP_200_OK)
         else:
-            return Response({"message": "Entered course is wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("Entered course is wrong", status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PUT'])
@@ -345,6 +390,6 @@ def logout(request):
             session.expires_at = datetime.now()
             session.save()
 
-            return Response({"message": "You are logged out"}, status=status.HTTP_200_OK)
+            return Response("You are logged out", status=status.HTTP_200_OK)
 
-    return Response({"message": "There was something wrong"}, status=status.HTTP_400_BAD_REQUEST)
+    return Response("There was something wrong", status=status.HTTP_400_BAD_REQUEST)
