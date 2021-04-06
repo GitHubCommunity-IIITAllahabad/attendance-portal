@@ -4,7 +4,7 @@ django-auth-ldap==1.2.12
 django-background-tasks==1.1.10
 django-compat==1.0.14
 django-extensions==1.7.9
-django-registration==2.1.2
+django-registration==3.1.2
 djangorestframework==3.5.1
 gunicorn==19.7.0
 psycopg2==2.6.2
